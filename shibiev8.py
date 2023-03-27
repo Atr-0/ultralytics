@@ -15,6 +15,7 @@ import numpy as np
 
 from ultralytics.yolo.utils.torch_utils import make_divisible
 cmd, jieguo, = "", "",
+rclpy.init()
 
 
 class shibieSubscriber(Node):
@@ -48,20 +49,21 @@ def aqu_pub(zhilin):
 
 def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=False, visualize=False):
     global cmd, jieguo
-    weights = "weights/" + cmd + "qu.pt"  # 权重
+    weights = "/home/zzb/ultralytics/weights/" + cmd + "qu.pt"  # 权重
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(torch.__version__)
     print(torch.cuda.is_available())
-    img_size = make_divisible(img_size0, int(stride))
+    img_size = make_divisible(int(img_size0), int(stride))
     # 导入模型
-    w = str(weights[0] if isinstance(weights, list) else weights)
-    model = attempt_load_weights(img_size, device=device, inplace=True, fuse=False)
+    weights0 = str(weights[0] if isinstance(weights, list) else weights)
+    model = attempt_load_weights(weights if isinstance(weights, list) else weights0,
+                                 device=device, inplace=True, fuse=False)
 
     names = model.names
 
     # 读取视频对象: 0 表示打开本地摄像头
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(4)
 
     # 获取当前视频的帧率与宽高，设置同样的格式，以确保相同帧率与宽高的视频输出
     ret_val, img0 = cap.read()
@@ -150,19 +152,20 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
 
 def run_bqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=False, visualize=False):
 
-    weights = r"weights/bqu.pt"  # 权重
+    weights = "/home/zzb/ultralytics/weights/bqu.pt"  # 权重
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(torch.__version__)
     print(torch.cuda.is_available())
     img_size = make_divisible(img_size0, int(stride))
     # 导入模型
-    w = str(weights[0] if isinstance(weights, list) else weights)
-    model = attempt_load_weights(img_size, device=device, inplace=True, fuse=False)
+    weights0 = str(weights[0] if isinstance(weights, list) else weights)
+    model = attempt_load_weights(weights if isinstance(weights, list) else weights0,
+                                 device=device, inplace=True, fuse=False)
 
     names = model.names
     # 读取视频对象: 0 表示打开本地摄像头
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(4)
     frame = 0       # 开始处理的帧数
 
     # 获取当前视频的帧率与宽高，设置同样的格式，以确保相同帧率与宽高的视频输出
@@ -170,8 +173,6 @@ def run_bqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
     fps, w, h = 30, img0.shape[1], img0.shape[0]
     vid_writer = cv2.VideoWriter(
         save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
-    global gantama
-
     # 按q退出循
     while True:
         ret_val, img0 = cap.read()
@@ -217,28 +218,48 @@ def run_bqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                     if conf > 0.5:
                         if xyxy[3] < 300:
                             # 上
-                            up.append(xyxy.tolist())
+                            up.append(list([xyxy[0], xyxy[1], xyxy[2], xyxy[3], cls]))
                         else:
                             # 下
-                            dowm.append(xyxy.tolist())
+                            dowm.append(list([xyxy[0], xyxy[1], xyxy[2], xyxy[3], cls]))
                         label = f'{names[c]} {conf:.2f}'
                         annotator.box_label(xyxy, label, color=colors(c, True))
-            if len(dowm) == 0:
-                print("xiaceng1")
-            elif len(dowm) == 2:
-                print('douyiyang')
-            elif dowm[0][0] > 300:
-                print("xiaceng1")
-            else:
-                print("xiaceng2")
-            if len(up) == 0:
-                print("shangceng1")
-            elif len(up) == 2:
-                print('douyiyang')
-            elif up[0][0] > 300:
-                print("shangceng0")
-            else:
-                print("shangceng2")
+            print(up)
+            print(dowm)
+            for i in dowm:
+                if i[4] == 1:
+                    print(("xiaceng1"))
+                    jieguo = jieguo + "14"
+                    break
+                else:
+                    if (len(dowm) >= 1):
+                        if len(dowm) == 2:
+                            print('xiacengdouyiyang')
+                        elif dowm[0][2] > 500:
+                            print("xiaceng0")
+                            jieguo = jieguo + "04"
+                        elif dowm[0][2] < 500:
+                            print("xiaceng2")
+                            jieguo = jieguo + "24"
+                    else:
+                        print("xiacengbushibie")
+            for i in up:
+                if i[4] == 1:
+                    print(("shangceng1"))
+                    jieguo = "31" + jieguo
+                    break
+                else:
+                    if (len(up) >= 1):
+                        if len(up) == 2:
+                            print('shangcengdouyiyang')
+                        elif up[0][2] > 500:
+                            print("shangceng0")
+                            jieguo = "30" + jieguo
+                        elif up[0][2] < 500:
+                            print("shangceng2")
+                            jieguo = "32" + jieguo
+                    else:
+                        print("shangcengbushibie")
             im0 = annotator.result()
             cv2.imshow('webcam:0', im0)
             aqu_pub(jieguo)
@@ -253,11 +274,11 @@ def run_bqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
 
 
 def main(args=None):
-    rclpy.init()
     shibie_subscriber = shibieSubscriber()
-    global cmd
+    global cmd, jieguo
     while rclpy.ok():
         rclpy.spin_once(shibie_subscriber, timeout_sec=0.1)
+        aqu_pub(jieguo)
         if cmd in ["a", "c", "d",]:
             run_aqun("/home/zzb/yolov5/", shibie_subscriber)
         if cmd == "b":
