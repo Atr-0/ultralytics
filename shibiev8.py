@@ -280,9 +280,9 @@ def main(args=None):
         rclpy.spin_once(shibie_subscriber, timeout_sec=0.1)
         aqu_pub(jieguo)
         if cmd in ["a", "c", "d",]:
-            run_aqun("/home/zzb/yolov5/", shibie_subscriber)
+            run_aqun("/home/zzb/", shibie_subscriber)
         if cmd == "b":
-            run_bqun("/home/zzb/yolov5/", shibie_subscriber)
+            run_bqun("/home/zzb/", shibie_subscriber)
         if cmd == "f":
             break
         #     while 1:
