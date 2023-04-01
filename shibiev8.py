@@ -110,8 +110,8 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                 det[:, :4] = ops.scale_boxes(img.shape[2:], det[:, :4], img0.shape).round()
                 for *xyxy, conf, cls in reversed(det):
                     c = int(cls)  # integer class
-                    if conf >= 0.7:
-                        if cmd == "a":
+                    if conf >= 0.75:
+                        if cmd == "a" and conf >= 0.81:
                             print(xyxy)
                             if xyxy[3] < 300:
                                 # 上
@@ -119,6 +119,8 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                             else:
                                 # 下
                                 jieguo = jieguo + str(c)
+                            label = f'{names[c]} {conf:.2f}'
+                            annotator.box_label(xyxy, label, color=colors(c, True))
                         elif cmd == "c":
                             print(xyxy)
                             if xyxy[3] < 300:
@@ -127,16 +129,20 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                             else:
                                 # 下
                                 jieguo = jieguo + "1"
-                        elif cmd == "d":
+                            label = f'{names[c]} {conf:.2f}'
+                            annotator.box_label(xyxy, label, color=colors(c, True))
+                        elif cmd == "d" and conf >= 0.80:
                             print(xyxy)
                             if xyxy[3] < 300:
                                 # 上
-                                jieguo = str((c + 1) + 10) + jieguo
+                                jieguo = str((c + 1) + 10) + \
+                                    ("2" if xyxy[0] < 120 else ("0" if xyxy[2] > 480 else "1")) + jieguo
                             else:
                                 # 下
-                                jieguo = jieguo + str((c + 1) + 20)
-                        label = f'{names[c]} {conf:.2f}'
-                        annotator.box_label(xyxy, label, color=colors(c, True))
+                                jieguo = jieguo + str((c + 1) + 20) + \
+                                    ("2" if xyxy[0] < 120 else ("0" if xyxy[2] > 480 else "1"))
+                            label = f'{names[c]} {conf:.2f}'
+                            annotator.box_label(xyxy, label, color=colors(c, True))
             im0 = annotator.result()
             cv2.imshow('webcam:0', im0)
             cv2.waitKey(1)
@@ -280,9 +286,9 @@ def main(args=None):
         rclpy.spin_once(shibie_subscriber, timeout_sec=0.1)
         aqu_pub(jieguo)
         if cmd in ["a", "c", "d",]:
-            run_aqun("/home/zzb/", shibie_subscriber)
+            run_aqun("/home/zzb/yolov5/", shibie_subscriber)
         if cmd == "b":
-            run_bqun("/home/zzb/", shibie_subscriber)
+            run_bqun("/home/zzb/yolov5/", shibie_subscriber)
         if cmd == "f":
             break
         #     while 1:
