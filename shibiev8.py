@@ -47,7 +47,7 @@ def aqu_pub(zhilin):
     time.sleep(0.03)
 
 
-def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=False, visualize=False):
+def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=False, visualize=False, cam=0):
     global cmd, jieguo
     weights = "/home/zzb/ultralytics/weights/" + cmd + "qu.pt"  # 权重
 
@@ -63,7 +63,7 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
     names = model.names
 
     # 读取视频对象: 0 表示打开本地摄像头
-    cap = cv2.VideoCapture(4)
+    cap = cv2.VideoCapture(cam)
 
     # 获取当前视频的帧率与宽高，设置同样的格式，以确保相同帧率与宽高的视频输出
     ret_val, img0 = cap.read()
@@ -156,7 +156,7 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
     cap.release()
 
 
-def run_bqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=False, visualize=False):
+def run_bqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=False, visualize=False, cam=0):
 
     weights = "/home/zzb/ultralytics/weights/bqu.pt"  # 权重
 
@@ -171,7 +171,7 @@ def run_bqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
 
     names = model.names
     # 读取视频对象: 0 表示打开本地摄像头
-    cap = cv2.VideoCapture(4)
+    cap = cv2.VideoCapture(cam)
     frame = 0       # 开始处理的帧数
 
     # 获取当前视频的帧率与宽高，设置同样的格式，以确保相同帧率与宽高的视频输出
@@ -282,13 +282,14 @@ def run_bqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
 def main(args=None):
     shibie_subscriber = shibieSubscriber()
     global cmd, jieguo
+    cam = 0
     while rclpy.ok():
         rclpy.spin_once(shibie_subscriber, timeout_sec=0.1)
         aqu_pub(jieguo)
         if cmd in ["a", "c", "d",]:
-            run_aqun("/home/zzb/yolov5/", shibie_subscriber)
+            run_aqun("/home/zzb/yolov5/", shibie_subscriber, cam=cam)
         if cmd == "b":
-            run_bqun("/home/zzb/yolov5/", shibie_subscriber)
+            run_bqun("/home/zzb/yolov5/", shibie_subscriber, cam=cam)
         if cmd == "f":
             break
         #     while 1:
