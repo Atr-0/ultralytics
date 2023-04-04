@@ -298,6 +298,8 @@ def main(args=None):
             print("无法打开摄像头，正在尝试", trycam)
             if trycam == 0:
                 break
+            else:
+                trycam -= 1
 
     while rclpy.ok():
         rclpy.spin_once(shibie_subscriber, timeout_sec=0.1)
