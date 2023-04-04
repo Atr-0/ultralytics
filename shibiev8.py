@@ -284,6 +284,7 @@ def main(args=None):
     cam = "/dev/camera"
     trycam = 15
     success = False
+    isretry = False
     while not success:
         try:
             cap = cv2.VideoCapture(cam)
@@ -296,11 +297,13 @@ def main(args=None):
             success = True
         except IndexError:
             print("无法打开摄像头，正在尝试", trycam)
+            isretry = True
             if trycam == 0:
                 break
             else:
                 trycam -= 1
-
+    if isretry:
+        cam = trycam
     while rclpy.ok():
         rclpy.spin_once(shibie_subscriber, timeout_sec=0.1)
         aqu_pub(jieguo)
