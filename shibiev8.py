@@ -296,8 +296,8 @@ def main(args=None):
             success = True
         except IndexError:
             print("无法打开摄像头，正在尝试", trycam)
-            if trycam != 0:
-                trycam -= 1
+            if trycam == 0:
+                break
 
     while rclpy.ok():
         rclpy.spin_once(shibie_subscriber, timeout_sec=0.1)
