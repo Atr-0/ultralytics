@@ -289,7 +289,7 @@ def main(args=None):
             cap = cv2.VideoCapture(cam)
             ret_val, img0 = cap.read()
             fps, w, h = 30, img0.shape[1], img0.shape[0]
-            vid_writer = cv2.VideoWriter(
+            cv2.VideoWriter(
                 "/home/zzb/", cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
             cv2.imshow('web', img0)
             cv2.waitKey(1)
