@@ -12,7 +12,6 @@ from ultralytics.yolo.utils.plotting import Annotator, colors, save_one_box
 import torch
 import cv2
 import numpy as np
-
 from ultralytics.yolo.utils.torch_utils import make_divisible
 cmd, jieguo, = "", "",
 rclpy.init()
@@ -282,30 +281,34 @@ def run_bqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
 def main(args=None):
     shibie_subscriber = shibieSubscriber()
     global cmd, jieguo
-    cam = 0
+    cam = "/dev/camera"
+    trycam = 15
+    success = False
+    while not success:
+        try:
+            cap = cv2.VideoCapture(cam)
+            ret_val, img0 = cap.read()
+            fps, w, h = 30, img0.shape[1], img0.shape[0]
+            vid_writer = cv2.VideoWriter(
+                "/home/zzb/", cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
+            cv2.imshow('web', img0)
+            cv2.waitKey(1)
+            success = True
+        except IndexError:
+            print("无法打开摄像头，正在尝试", trycam)
+            if trycam != 0:
+                trycam -= 1
+
     while rclpy.ok():
         rclpy.spin_once(shibie_subscriber, timeout_sec=0.1)
         aqu_pub(jieguo)
         if cmd in ["a", "c", "d",]:
-            run_aqun("/home/zzb/yolov5/", shibie_subscriber, cam=cam)
+            run_aqun("/home/zzb/", shibie_subscriber, cam=cam)
         if cmd == "b":
-            run_bqun("/home/zzb/yolov5/", shibie_subscriber, cam=cam)
+            run_bqun("/home/zzb/", shibie_subscriber, cam=cam)
         if cmd == "f":
             break
-        #     while 1:
-        #         rclpy.spin_once(shibie_subscriber)
-        #         if cmd=="y":
-        #             print("aqu shibiezhong")
-        #             shibieA.gantama=1
-        #             cmd=""
-        #         elif cmd=="f":
-        #             print("a mode jieshu")
-        #             break
-        #         time.sleep(0.1)
-        # time.sleep(0.1)
-    # Destroy the node explicitly
-    # (optional - otherwise it will be done automatically
-    # when the garbage collector destroys the node object)
+    cv2.destroyAllWindows()
     shibie_subscriber.destroy_node()
     rclpy.shutdown()
 
