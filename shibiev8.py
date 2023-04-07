@@ -146,6 +146,8 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
             cv2.imshow('webcam:0', im0)
             cv2.waitKey(1)
             aqu_pub(jieguo)
+            cv2.imwrite("/home/zzb/images/shibie/" + cmd + "qu/" + str(time.time()) + ".jpg", im0)
+            cv2.imwrite("/home/zzb/images/" + cmd + "qu/" + str(time.time()) + ".jpg", img0)
             cmd = "n"
         if cmd == "n":
             print("Amode jieshu")
@@ -269,16 +271,40 @@ def run_bqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
             cv2.imshow('webcam:0', im0)
             aqu_pub(jieguo)
             cv2.waitKey(1)
+            cv2.imwrite("/home/zzb/images/shibie/bqu/" + str(time.time()) + ".jpg", im0)
+            cv2.imwrite("/home/zzb/images/bqu/" + str(time.time()) + ".jpg", img0)
             cmd = "n"
         if cmd == "n":
             print("bmode jieshu")
             break
+
     # 按q退出循环
     vid_writer.release()
     cap.release()
 
 
+def mkdir(mkpath):
+    import os
+    mkpath = mkpath.strip()
+    mkpath = mkpath.rstrip("\\")
+    isExists = os.path.exists(mkpath)
+    if not isExists:
+        os.makedirs(mkpath)
+        print(mkpath + ' 创建成功')
+        return True
+    else:
+        return False
+
+
 def main(args=None):
+    imgPath = "/home/zzb/images"
+    dePath = "/home/zzb/images/shibie"
+    mkdir(imgPath)
+    mkdir(dePath)
+    for i in ["a", "b", "c", "d"]:
+        mkdir(imgPath + "/" + i + "qu")
+        mkdir(dePath + "/" + i + "qu")
+
     shibie_subscriber = shibieSubscriber()
     global cmd, jieguo
     cam = "/dev/camera"
@@ -289,18 +315,13 @@ def main(args=None):
         try:
             cap = cv2.VideoCapture(cam)
             ret_val, img0 = cap.read()
-            fps, w, h = 30, img0.shape[1], img0.shape[0]
-            cv2.VideoWriter(
-                "/home/zzb/", cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
             cv2.imshow('web', img0)
             cv2.waitKey(1)
             success = True
-        except IndexError:
+        except AttributeError:
             print("无法打开摄像头，正在尝试", trycam)
             isretry = True
-            if trycam == 0:
-                break
-            else:
+            if not success:
                 trycam -= 1
     if isretry:
         cam = trycam
