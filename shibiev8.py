@@ -311,7 +311,7 @@ def main(args=None):
     trycam = 15
     success = False
     isretry = False
-    while not success:
+    while not success and trycam > 0:
         try:
             cap = cv2.VideoCapture(cam)
             ret_val, img0 = cap.read()
@@ -319,10 +319,13 @@ def main(args=None):
             cv2.waitKey(1)
             success = True
         except AttributeError:
-            print("无法打开摄像头，正在尝试", trycam)
+            print("无法打开摄像头，正在尝试", trycam - 1)
             isretry = True
+        finally:
             if not success:
                 trycam -= 1
+
+        time.sleep(0.05)
     if isretry:
         cam = trycam
     while rclpy.ok():
