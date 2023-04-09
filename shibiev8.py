@@ -48,18 +48,6 @@ def aqu_pub(zhilin):
 
 def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=False, visualize=False, cam=0):
     global cmd, jieguo
-    weights = "/home/zzb/ultralytics/weights/" + cmd + "qu.pt"  # 权重
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(torch.__version__)
-    print(torch.cuda.is_available())
-    img_size = make_divisible(int(img_size0), int(stride))
-    # 导入模型
-    weights0 = str(weights[0] if isinstance(weights, list) else weights)
-    model = attempt_load_weights(weights if isinstance(weights, list) else weights0,
-                                 device=device, inplace=True, fuse=False)
-
-    names = model.names
 
     # 读取视频对象: 0 表示打开本地摄像头
     cap = cv2.VideoCapture(cam)
@@ -84,6 +72,18 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
         rclpy.spin_once(shibie_subscriber, timeout_sec=0.1)
 
         if cmd in ["a", "b", "c", "d",]:
+            weights = "/home/zzb/ultralytics/weights/" + cmd + "qu.pt"  # 权重
+
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            print(torch.__version__)
+            print(torch.cuda.is_available())
+            img_size = make_divisible(int(img_size0), int(stride))
+            # 导入模型
+            weights0 = str(weights[0] if isinstance(weights, list) else weights)
+            model = attempt_load_weights(weights if isinstance(weights, list) else weights0,
+                                         device=device, inplace=True, fuse=False)
+
+            names = model.names
             jieguo = ""
             # Padded resize
             img = letterbox(img0, img_size, stride=stride, auto=True)[0]
