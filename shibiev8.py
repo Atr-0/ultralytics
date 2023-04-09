@@ -118,7 +118,7 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                             dowm.append(list([xyxy[0], xyxy[1], xyxy[2], xyxy[3], cls]))
                         label = f'{names[c]} {conf:.2f}'
                         annotator.box_label(xyxy, label, color=colors(c, True))
-                    if conf >= 0.75:
+                    elif conf >= 0.75:
                         if cmd == "a" and conf >= 0.81:
                             print(xyxy)
                             if xyxy[3] < 300:
