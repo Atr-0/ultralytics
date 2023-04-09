@@ -109,16 +109,17 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                 det[:, :4] = ops.scale_boxes(img.shape[2:], det[:, :4], img0.shape).round()
                 for *xyxy, conf, cls in reversed(det):
                     c = int(cls)  # integer class
-                    if conf > 0.5 and cmd == "b":
-                        if xyxy[3] < 300:
-                            # 上
-                            up.append(list([xyxy[0], xyxy[1], xyxy[2], xyxy[3], cls]))
-                        else:
-                            # 下
-                            dowm.append(list([xyxy[0], xyxy[1], xyxy[2], xyxy[3], cls]))
-                        label = f'{names[c]} {conf:.2f}'
-                        annotator.box_label(xyxy, label, color=colors(c, True))
-                    elif conf >= 0.75:
+                    if cmd == "b":
+                        if conf > 0.5:
+                            if xyxy[3] < 300:
+                                # 上
+                                up.append(list([xyxy[0], xyxy[1], xyxy[2], xyxy[3], cls]))
+                            else:
+                                # 下
+                                dowm.append(list([xyxy[0], xyxy[1], xyxy[2], xyxy[3], cls]))
+                            label = f'{names[c]} {conf:.2f}'
+                            annotator.box_label(xyxy, label, color=colors(c, True))
+                    else:
                         if cmd == "a" and conf >= 0.81:
                             print(xyxy)
                             if xyxy[3] < 300:
@@ -129,7 +130,7 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                                 jieguo = jieguo + str(c)
                             label = f'{names[c]} {conf:.2f}'
                             annotator.box_label(xyxy, label, color=colors(c, True))
-                        elif cmd == "c":
+                        elif cmd == "c" and conf > 0.75:
                             print(xyxy)
                             if xyxy[3] < 300:
                                 # 上
