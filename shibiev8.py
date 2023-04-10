@@ -229,26 +229,18 @@ def main(args=None):
     global cmd, jieguo
     cam = "/dev/camera"
     trycam = 15
-    success = False
     isretry = False
-    while not success and trycam > 0:
+    while rclpy.ok():
+        rclpy.spin_once(shibie_subscriber, timeout_sec=0.1)
         try:
-            cap = cv2.VideoCapture(cam)
-            ret_val, img0 = cap.read()
-            cv2.imshow('web', img0)
-            cv2.waitKey(1)
-            success = True
-        except AttributeError:
+            if isretry:
+                cam = trycam
+            run_aqun("/home/zzb/", shibie_subscriber, cam=cam)
+        except (AttributeError, cv2.error):
             print("无法打开摄像头，正在尝试", trycam - 1)
             isretry = True
             trycam -= 1
 
-        time.sleep(0.05)
-    if isretry:
-        cam = trycam - 1
-    while rclpy.ok():
-        rclpy.spin_once(shibie_subscriber, timeout_sec=0.1)
-        run_aqun("/home/zzb/", shibie_subscriber, cam=cam)
         if cmd == "f":
             break
     cv2.destroyAllWindows()
