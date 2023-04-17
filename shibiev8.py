@@ -13,6 +13,7 @@ import torch
 import cv2
 import numpy as np
 from ultralytics.yolo.utils.torch_utils import make_divisible
+from similar.yolov8 import getbqujieguo
 cmd, jieguo, = "", "",
 rclpy.init()
 
@@ -46,6 +47,24 @@ def aqu_pub(zhilin):
     time.sleep(0.03)
 
 
+def enhance_brightness(img_path):
+    # 读取图片
+    img = cv2.imread(img_path)
+
+    # 将图片转换为灰度图像
+    grayImg = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # 应用对比度增强算法，调整对比度值可以控制增强强度
+    contrast = 1.5
+    outputImg1 = cv2.addWeighted(grayImg, contrast, 0, 0, 0)
+
+    # 应用直方图均衡化算法
+    outputImg2 = cv2.equalizeHist(outputImg1)
+
+    # 返回处理后的图像
+    return outputImg2
+
+
 def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=False, visualize=False, cam=0):
     global cmd, jieguo
 
@@ -65,6 +84,9 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
             cap.release()
             cv2.destroyAllWindows()
             break
+
+        original_image = img0
+        img0 = cv2.imread(enhance_brightness(original_image))
         cv2.imshow('web', img0)
         cv2.waitKey(1)
         if not ret_val:
@@ -72,54 +94,42 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
         rclpy.spin_once(shibie_subscriber, timeout_sec=0.1)
 
         if cmd in ["a", "b", "c", "d",]:
-            weights = "/home/zzb/ultralytics/weights/" + cmd + "qu.pt"  # 权重
+            if cmd != "b":
+                weights = "/home/zzb/ultralytics/weights/" + cmd + "qu.pt"  # 权重
 
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            print(torch.__version__)
-            print(torch.cuda.is_available())
-            img_size = make_divisible(int(img_size0), int(stride))
-            # 导入模型
-            weights0 = str(weights[0] if isinstance(weights, list) else weights)
-            model = attempt_load_weights(weights if isinstance(weights, list) else weights0,
-                                         device=device, inplace=True, fuse=False)
+                device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+                print(torch.__version__)
+                print(torch.cuda.is_available())
+                img_size = make_divisible(int(img_size0), int(stride))
+                # 导入模型
+                weights0 = str(weights[0] if isinstance(weights, list) else weights)
+                model = attempt_load_weights(weights if isinstance(weights, list) else weights0,
+                                             device=device, inplace=True, fuse=False)
 
-            names = model.names
-            jieguo = ""
-            # Padded resize
-            img = letterbox(img0, img_size, stride=stride, auto=True)[0]
+                names = model.names
+                jieguo = ""
+                # Padded resize
+                img = letterbox(img0, img_size, stride=stride, auto=True)[0]
 
-            # Convert
-            img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
-            img = np.ascontiguousarray(img)
+                # Convert
+                img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
+                img = np.ascontiguousarray(img)
 
-            img = torch.from_numpy(img).to(device)
-            img = img.float() / 255.0   # 0 - 255 to 0.0 - 1.0
-            img = img[None]     # [h w c] -> [1 h w c]
+                img = torch.from_numpy(img).to(device)
+                img = img.float() / 255.0   # 0 - 255 to 0.0 - 1.0
+                img = img[None]     # [h w c] -> [1 h w c]
 
-            # inference
-            pred = model(img, augment=augment, visualize=visualize)[0]
-            pred = ops.non_max_suppression(pred, conf_thres=0.25, iou_thres=0.45, max_det=1000)
+                # inference
+                pred = model(img, augment=augment, visualize=visualize)[0]
+                pred = ops.non_max_suppression(pred, conf_thres=0.25, iou_thres=0.5, max_det=1000)
 
-            # plot label
-            det = pred[0]
-            up = []
-            dowm = []
-            annotator = Annotator(img0.copy(), line_width=3, example=str(names))
-            if len(det):
-                det[:, :4] = ops.scale_boxes(img.shape[2:], det[:, :4], img0.shape).round()
-                for *xyxy, conf, cls in reversed(det):
-                    c = int(cls)  # integer class
-                    if cmd == "b":
-                        if conf > 0.5:
-                            if xyxy[3] < 300:
-                                # 上
-                                up.append(list([xyxy[0], xyxy[1], xyxy[2], xyxy[3], cls]))
-                            else:
-                                # 下
-                                dowm.append(list([xyxy[0], xyxy[1], xyxy[2], xyxy[3], cls]))
-                            label = f'{names[c]} {conf:.2f}'
-                            annotator.box_label(xyxy, label, color=colors(c, True))
-                    else:
+                # plot label
+                det = pred[0]
+                annotator = Annotator(img0.copy(), line_width=3, example=str(names))
+                if len(det):
+                    det[:, :4] = ops.scale_boxes(img.shape[2:], det[:, :4], img0.shape).round()
+                    for *xyxy, conf, cls in reversed(det):
+                        c = int(cls)  # integer class
                         if cmd == "a" and conf >= 0.81:
                             print(xyxy)
                             if xyxy[3] < 300:
@@ -140,7 +150,7 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                                 jieguo = jieguo + "1"
                             label = f'{names[c]} {conf:.2f}'
                             annotator.box_label(xyxy, label, color=colors(c, True))
-                        elif cmd == "d" and conf >= 0.80:
+                        elif cmd == "d" and conf >= 0.85:
                             print(xyxy)
                             if xyxy[3] < 300:
                                 # 上
@@ -152,45 +162,12 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                                     ("2" if xyxy[0] < 120 else ("0" if xyxy[2] > 480 else "1"))
                             label = f'{names[c]} {conf:.2f}'
                             annotator.box_label(xyxy, label, color=colors(c, True))
-            if cmd == "b":
-                print(up)
-                print(dowm)
-                for i in dowm:
-                    if i[4] == 1:
-                        print(("xiaceng1"))
-                        jieguo = jieguo + "14"
-                        break
-                    else:
-                        if (len(dowm) >= 1):
-                            if len(dowm) == 2:
-                                print('xiacengdouyiyang')
-                            elif dowm[0][2] > 500:
-                                print("xiaceng0")
-                                jieguo = jieguo + "04"
-                            elif dowm[0][2] < 500:
-                                print("xiaceng2")
-                                jieguo = jieguo + "24"
-                        else:
-                            print("xiacengbushibie")
-                for i in up:
-                    if i[4] == 1:
-                        print(("shangceng1"))
-                        jieguo = "31" + jieguo
-                        break
-                    else:
-                        if (len(up) >= 1):
-                            if len(up) == 2:
-                                print('shangcengdouyiyang')
-                            elif up[0][2] > 500:
-                                print("shangceng0")
-                                jieguo = "30" + jieguo
-                            elif up[0][2] < 500:
-                                print("shangceng2")
-                                jieguo = "32" + jieguo
-                        else:
-                            print("shangcengbushibie")
 
-            im0 = annotator.result()
+                im0 = annotator.result()
+            else:
+                bqu = getbqujieguo(original_image)
+                jieguo = bqu.get_jieguo()
+                im0 = bqu.get_plot_image()
             cv2.imshow('webcam:0', im0)
             cv2.waitKey(1)
             aqu_pub(jieguo)
