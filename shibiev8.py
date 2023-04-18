@@ -13,7 +13,7 @@ import torch
 import cv2
 import numpy as np
 from ultralytics.yolo.utils.torch_utils import make_divisible
-from similar.yolov8 import getbqujieguo
+from yolov8 import getbqujieguo
 cmd, jieguo, = "", "",
 rclpy.init()
 
@@ -86,7 +86,7 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
             break
 
         original_image = img0
-        img0 = cv2.imread(enhance_brightness(original_image))
+        # img0 = enhance_brightness(original_image)
         cv2.imshow('web', img0)
         cv2.waitKey(1)
         if not ret_val:
@@ -97,12 +97,14 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
             if cmd != "b":
                 weights = "/home/zzb/ultralytics/weights/" + cmd + "qu.pt"  # 权重
 
-                device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+                device = torch.device(
+                    "cuda" if torch.cuda.is_available() else "cpu")
                 print(torch.__version__)
                 print(torch.cuda.is_available())
                 img_size = make_divisible(int(img_size0), int(stride))
                 # 导入模型
-                weights0 = str(weights[0] if isinstance(weights, list) else weights)
+                weights0 = str(weights[0] if isinstance(
+                    weights, list) else weights)
                 model = attempt_load_weights(weights if isinstance(weights, list) else weights0,
                                              device=device, inplace=True, fuse=False)
 
@@ -121,13 +123,16 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
 
                 # inference
                 pred = model(img, augment=augment, visualize=visualize)[0]
-                pred = ops.non_max_suppression(pred, conf_thres=0.25, iou_thres=0.5, max_det=1000)
+                pred = ops.non_max_suppression(
+                    pred, conf_thres=0.25, iou_thres=0.5, max_det=1000)
 
                 # plot label
                 det = pred[0]
-                annotator = Annotator(img0.copy(), line_width=3, example=str(names))
+                annotator = Annotator(
+                    img0.copy(), line_width=3, example=str(names))
                 if len(det):
-                    det[:, :4] = ops.scale_boxes(img.shape[2:], det[:, :4], img0.shape).round()
+                    det[:, :4] = ops.scale_boxes(
+                        img.shape[2:], det[:, :4], img0.shape).round()
                     for *xyxy, conf, cls in reversed(det):
                         c = int(cls)  # integer class
                         if cmd == "a" and conf >= 0.81:
@@ -139,7 +144,8 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                                 # 下
                                 jieguo = jieguo + str(c)
                             label = f'{names[c]} {conf:.2f}'
-                            annotator.box_label(xyxy, label, color=colors(c, True))
+                            annotator.box_label(
+                                xyxy, label, color=colors(c, True))
                         elif cmd == "c" and conf > 0.75:
                             print(xyxy)
                             if xyxy[3] < 300:
@@ -149,19 +155,23 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                                 # 下
                                 jieguo = jieguo + "1"
                             label = f'{names[c]} {conf:.2f}'
-                            annotator.box_label(xyxy, label, color=colors(c, True))
+                            annotator.box_label(
+                                xyxy, label, color=colors(c, True))
                         elif cmd == "d" and conf >= 0.85:
                             print(xyxy)
                             if xyxy[3] < 300:
                                 # 上
                                 jieguo = str((c + 1) + 10) + \
-                                    ("2" if xyxy[0] < 120 else ("0" if xyxy[2] > 480 else "1")) + jieguo
+                                    ("2" if xyxy[0] < 120 else (
+                                        "0" if xyxy[2] > 480 else "1")) + jieguo
                             else:
                                 # 下
                                 jieguo = jieguo + str((c + 1) + 20) + \
-                                    ("2" if xyxy[0] < 120 else ("0" if xyxy[2] > 480 else "1"))
+                                    ("2" if xyxy[0] < 120 else (
+                                        "0" if xyxy[2] > 480 else "1"))
                             label = f'{names[c]} {conf:.2f}'
-                            annotator.box_label(xyxy, label, color=colors(c, True))
+                            annotator.box_label(
+                                xyxy, label, color=colors(c, True))
 
                 im0 = annotator.result()
             else:
@@ -171,8 +181,10 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
             cv2.imshow('webcam:0', im0)
             cv2.waitKey(1)
             aqu_pub(jieguo)
-            cv2.imwrite("/home/zzb/images/shibie/" + cmd + "qu/" + str(time.time()) + ".jpg", im0)
-            cv2.imwrite("/home/zzb/images/" + cmd + "qu/" + str(time.time()) + ".jpg", img0)
+            cv2.imwrite("/home/zzb/images/shibie/" + cmd +
+                        "qu/" + str(time.time()) + ".jpg", im0)
+            cv2.imwrite("/home/zzb/images/" + cmd + "qu/" +
+                        str(time.time()) + ".jpg", img0)
             cmd = "n"
         if cmd == "n":
             aqu_pub(jieguo)

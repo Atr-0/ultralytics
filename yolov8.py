@@ -2,6 +2,7 @@ from ultralytics import YOLO
 import cv2
 import time
 import numpy as np
+import sys
 import similarity
 import os
 from keras.utils import image_utils as image
@@ -66,7 +67,8 @@ def zengqiangduibi(img0):
 def zengqiangduibi1(img0):
     clahe = cv2.createCLAHE(clipLimit=10, tileGridSize=(20, 20))
 
-    lab = cv2.cvtColor(img0, cv2.COLOR_BGR2LAB)  # convert from BGR to LAB color space
+    # convert from BGR to LAB color space
+    lab = cv2.cvtColor(img0, cv2.COLOR_BGR2LAB)
     l, a, b = cv2.split(lab)  # split on 3 different channels
 
     l2 = clahe.apply(l)  # apply CLAHE to the L-channel
@@ -77,13 +79,14 @@ def zengqiangduibi1(img0):
 
 
 class getbqujieguo():
-    def __init__(self, images) -> str:
+    def __init__(self, images):
         # Load a model
-        model = YOLO("/home/zzb/ultralytics/weights/cqu.pt")  # load an official model
+        # load an official model
+        model = YOLO("/home/zzb/ultralytics/weights/cqu.pt")
         # Predict with the model
 
         # img0=cv2.imread(file_pathname+filename)
-        img0 = cv2.imread(images)
+        img0 = images
         # img0=zhengqiang2(img0)
         img0 = zengqiangduibi1(img0)
         # img0=log_transfor(img0,-100)
@@ -94,37 +97,43 @@ class getbqujieguo():
         up = []
         down = []
         for i in res.boxes.numpy():
-            print(i.xyxy[0].tolist())
-            if i.xyxy[0][1] < 300:
+            # print(i.xyxy[0].tolist())
+            if i.xyxy[0][1] > 300:
                 down.append(i.xyxy[0])
             else:
                 up.append(i.xyxy[0])
-        self.plot_image = res_plotted
+
+        # self.plot_image= res_plotted
         upjieguo = []
         simjieguo = []
-        self.jieguo = ''
+        self.fabujieguo = ""
         up.sort(key=lambda x: x[0])
         if len(up) == 3:
             juhe = []
             for i in range(3):
-                tmp0 = img0[int(up[i][1]):int(up[i][3]), int(up[i][0]):int(up[i][2])]
+                tmp0 = img0[int(up[i][1]):int(up[i][3]),
+                            int(up[i][0]):int(up[i][2])]
                 # cv2.imwrite("/home/zzb/test1/" + filename[0:len(filename) - 4] + str(i) + str(1) + ".jpg", tmp0)
                 tmp1 = cv2.mean(tmp0)
                 juhe.append(tmp1)
             for i in range(2, -1, -1):
-                tmp0 = img0[int(up[i][1]):int(up[i][3]), int(up[i][0]):int(up[i][2])]
-                tmp1 = img0[int(up[i - 1][1]):int(up[i - 1][3]), int(up[i - 1][0]):int(up[i - 1][2])]
+                tmp0 = img0[int(up[i][1]):int(up[i][3]),
+                            int(up[i][0]):int(up[i][2])]
+                tmp1 = img0[int(up[i - 1][1]):int(up[i - 1][3]),
+                            int(up[i - 1][0]):int(up[i - 1][2])]
 
-                tmp0 = cv2.resize(tmp0, (224, 224), interpolation=cv2.INTER_LINEAR)
-                tmp1 = cv2.resize(tmp1, (224, 224), interpolation=cv2.INTER_LINEAR)
-                self.jieguo = similarity.runAllImageSimilaryFun(tmp0, tmp1)
+                tmp0 = cv2.resize(tmp0, (224, 224),
+                                  interpolation=cv2.INTER_LINEAR)
+                tmp1 = cv2.resize(tmp1, (224, 224),
+                                  interpolation=cv2.INTER_LINEAR)
+                jieguo = similarity.runAllImageSimilaryFun(tmp0, tmp1)
                 xiangsidu = yuxianpinggu(juhe[i], juhe[i - 1])
 
                 tmp2 = np.hstack((tmp0, tmp1))
                 if i == 0:
-                    upjieguo.append(min(self.jieguo))
+                    upjieguo.append(min(jieguo))
                 else:
-                    upjieguo.append(min(self.jieguo))
+                    upjieguo.append(min(jieguo))
 
                 simjieguo.append(xiangsidu)
             print(juhe)
@@ -133,19 +142,24 @@ class getbqujieguo():
             # jieguozong=[]
             # jieguozong.append(simjieguo,upjieguo,[0,2,1])
             zidian = {0: 0, 1: 2, 2: 1}
-            if max(simjieguo) - min(simjieguo) > 0.03 or max(upjieguo) - min(upjieguo) > 0.05:
+            if max(simjieguo) - min(simjieguo) > 600 or max(upjieguo) - min(upjieguo) > 0.05:
                 print("666")
                 for i in range(2, -1, -1):
-                    tmp0 = img0[int(up[i][1]):int(up[i][3]), int(up[i][0]):int(up[i][2])]
-                    tmp1 = img0[int(up[i - 1][1]):int(up[i - 1][3]), int(up[i - 1][0]):int(up[i - 1][2])]
+                    tmp0 = img0[int(up[i][1]):int(up[i][3]),
+                                int(up[i][0]):int(up[i][2])]
+                    tmp1 = img0[int(up[i - 1][1]):int(up[i - 1][3]),
+                                int(up[i - 1][0]):int(up[i - 1][2])]
 
-                    tmp0 = cv2.resize(tmp0, (224, 224), interpolation=cv2.INTER_AREA)
-                    tmp1 = cv2.resize(tmp1, (224, 224), interpolation=cv2.INTER_AREA)
+                    tmp0 = cv2.resize(tmp0, (224, 224),
+                                      interpolation=cv2.INTER_AREA)
+                    tmp1 = cv2.resize(tmp1, (224, 224),
+                                      interpolation=cv2.INTER_AREA)
                     tmp2 = np.hstack((tmp0, tmp1))
+
                     if min(simjieguo) == simjieguo[2 - i]:
                         k = zidian[2 - i]
                         print("shangcengcuod shi" + str(k) + "ge")
-                        self.jieguo = "3" + str(k) + self.jieguo
+                        self.fabujieguo = "3" + str(k) + self.fabujieguo
                         # cv2.rectangle(img0,(500,100),(1000,500),(0,255,0),3)
                         cv2.rectangle(img0, (int(up[k][0]), int(up[k][1])),
                                       (int(up[k][2]), int(up[k][3])), (0, 255, 0), 2)
@@ -162,23 +176,28 @@ class getbqujieguo():
         if len(down) == 3:
             juhe = []
             for i in range(3):
-                tmp0 = img0[int(down[i][1]):int(down[i][3]), int(down[i][0]):int(down[i][2])]
+                tmp0 = img0[int(down[i][1]):int(down[i][3]),
+                            int(down[i][0]):int(down[i][2])]
                 tmp1 = cv2.mean(tmp0)
                 juhe.append(tmp1)
             for i in range(2, -1, -1):
-                tmp0 = img0[int(down[i][1]):int(down[i][3]), int(down[i][0]):int(down[i][2])]
-                tmp1 = img0[int(down[i - 1][1]):int(down[i - 1][3]), int(down[i - 1][0]):int(down[i - 1][2])]
+                tmp0 = img0[int(down[i][1]):int(down[i][3]),
+                            int(down[i][0]):int(down[i][2])]
+                tmp1 = img0[int(down[i - 1][1]):int(down[i - 1][3]),
+                            int(down[i - 1][0]):int(down[i - 1][2])]
 
-                tmp0 = cv2.resize(tmp0, (224, 224), interpolation=cv2.INTER_LINEAR)
-                tmp1 = cv2.resize(tmp1, (224, 224), interpolation=cv2.INTER_LINEAR)
-                self.jieguo = similarity.runAllImageSimilaryFun(tmp0, tmp1)
+                tmp0 = cv2.resize(tmp0, (224, 224),
+                                  interpolation=cv2.INTER_LINEAR)
+                tmp1 = cv2.resize(tmp1, (224, 224),
+                                  interpolation=cv2.INTER_LINEAR)
+                jieguo = similarity.runAllImageSimilaryFun(tmp0, tmp1)
                 xiangsidu = yuxianpinggu(juhe[i], juhe[i - 1])
 
                 tmp2 = np.hstack((tmp0, tmp1))
                 if i == 0:
-                    downjieguo.append(min(self.jieguo))
+                    downjieguo.append(min(jieguo))
                 else:
-                    downjieguo.append(min(self.jieguo))
+                    downjieguo.append(min(jieguo))
                 simjieguo.append(xiangsidu)
             print(juhe)
             print(simjieguo)
@@ -189,16 +208,20 @@ class getbqujieguo():
             if max(simjieguo) - min(simjieguo) > 0.03 or max(downjieguo) - min(downjieguo) > 0.05:
                 print("666")
                 for i in range(2, -1, -1):
-                    tmp0 = img0[int(down[i][1]):int(down[i][3]), int(down[i][0]):int(down[i][2])]
-                    tmp1 = img0[int(down[i - 1][1]):int(down[i - 1][3]), int(down[i - 1][0]):int(down[i - 1][2])]
+                    tmp0 = img0[int(down[i][1]):int(down[i][3]),
+                                int(down[i][0]):int(down[i][2])]
+                    tmp1 = img0[int(down[i - 1][1]):int(down[i - 1][3]),
+                                int(down[i - 1][0]):int(down[i - 1][2])]
 
-                    tmp0 = cv2.resize(tmp0, (224, 224), interpolation=cv2.INTER_AREA)
-                    tmp1 = cv2.resize(tmp1, (224, 224), interpolation=cv2.INTER_AREA)
+                    tmp0 = cv2.resize(tmp0, (224, 224),
+                                      interpolation=cv2.INTER_AREA)
+                    tmp1 = cv2.resize(tmp1, (224, 224),
+                                      interpolation=cv2.INTER_AREA)
                     tmp2 = np.hstack((tmp0, tmp1))
                     if min(simjieguo) == simjieguo[2 - i]:
                         k = zidian[2 - i]
                         print("xiacengcuod shi" + str(k) + "ge")
-                        self.jieguo = self.jieguo + str(k) + "4"
+                        self.fabujieguo = self.fabujieguo + str(k) + "4"
                         # cv2.rectangle(img0,(500,100),(1000,500),(0,255,0),3)
                         cv2.rectangle(img0, (int(down[k][0]), int(down[k][1])),
                                       (int(down[k][2]), int(down[k][3])), (0, 255, 0), 2)
@@ -209,9 +232,10 @@ class getbqujieguo():
             else:
                 print("yiyang")
                 # cv2.imwrite("/home/zzb/xiangsi/"+filename[0:len(filename)-4]+str(i)+str(1)+".jpg",img0)
+        self.plot_image = img0
 
     def get_jieguo(self):
-        return self.jieguo
+        return self.fabujieguo
 
     def get_plot_image(self):
         return self.plot_image
