@@ -226,9 +226,11 @@ def main(args=None):
                 cam = trycam
             run_aqun("/home/zzb/", shibie_subscriber, cam=cam)
         except (AttributeError, cv2.error):
-            print("无法打开摄像头，正在尝试", trycam - 1)
+            print("无法打开摄像头，正在尝试" + str(trycam - 1), end="\r")
             isretry = True
             trycam -= 1
+        if trycam == 0:
+            trycam = 15
 
         if cmd == "f":
             break
