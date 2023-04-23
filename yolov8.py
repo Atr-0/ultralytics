@@ -91,7 +91,7 @@ class getbqujieguo():
         img0 = zengqiangduibi1(img0)
         # img0=log_transfor(img0,-100)
         time.sleep(0.1)
-        res = model(img0, conf=0.6)  # predict on an image
+        res = model(img0, conf=0.5)  # predict on an image
         res_plotted = res[0].plot()
         res = list(res)[0]  # get result from generator
         up = []
@@ -142,7 +142,7 @@ class getbqujieguo():
             # jieguozong=[]
             # jieguozong.append(simjieguo,upjieguo,[0,2,1])
             zidian = {0: 0, 1: 2, 2: 1}
-            if max(simjieguo) - min(simjieguo) > 600 or max(upjieguo) - min(upjieguo) > 0.05:
+            if max(simjieguo) - min(simjieguo) > 0.04 or max(upjieguo) - min(upjieguo) > 0.06:
                 print("666")
                 for i in range(2, -1, -1):
                     tmp0 = img0[int(up[i][1]):int(up[i][3]),
@@ -205,7 +205,7 @@ class getbqujieguo():
             # jieguozong=[]
             # jieguozong.append(simjieguo,upjieguo,[0,2,1])
             zidian = {0: 0, 1: 2, 2: 1}
-            if max(simjieguo) - min(simjieguo) > 0.03 or max(downjieguo) - min(downjieguo) > 0.05:
+            if max(simjieguo) - min(simjieguo) > 0.04 or max(downjieguo) - min(downjieguo) > 0.06:
                 print("666")
                 for i in range(2, -1, -1):
                     tmp0 = img0[int(down[i][1]):int(down[i][3]),
