@@ -141,8 +141,10 @@ class getbqujieguo():
             print(upjieguo)
             # jieguozong=[]
             # jieguozong.append(simjieguo,upjieguo,[0,2,1])
+            print("SIM jieguo!!!:", max(simjieguo) - min(simjieguo))
+            print("hstack jieguo!!!:", max(upjieguo) - min(upjieguo))
             zidian = {0: 0, 1: 2, 2: 1}
-            if max(simjieguo) - min(simjieguo) > 0.04 or max(upjieguo) - min(upjieguo) > 0.06:
+            if max(simjieguo) - min(simjieguo) > 600 or max(upjieguo) - min(upjieguo) > 0.06:
                 print("666")
                 for i in range(2, -1, -1):
                     tmp0 = img0[int(up[i][1]):int(up[i][3]),
@@ -204,8 +206,10 @@ class getbqujieguo():
             print(upjieguo)
             # jieguozong=[]
             # jieguozong.append(simjieguo,upjieguo,[0,2,1])
+            print("SIM jieguo!!!:", max(simjieguo) - min(simjieguo))
+            print("hstack jieguo!!!:", max(downjieguo) - min(downjieguo))
             zidian = {0: 0, 1: 2, 2: 1}
-            if max(simjieguo) - min(simjieguo) > 0.04 or max(downjieguo) - min(downjieguo) > 0.06:
+            if max(simjieguo) - min(simjieguo) > 600 or max(downjieguo) - min(downjieguo) > 0.06:
                 print("666")
                 for i in range(2, -1, -1):
                     tmp0 = img0[int(down[i][1]):int(down[i][3]),
