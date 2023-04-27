@@ -47,22 +47,28 @@ def aqu_pub(zhilin):
     time.sleep(0.03)
 
 
-def enhance_brightness(img_path):
-    # 读取图片
-    img = cv2.imread(img_path)
+def img_mix(img1):
+    # img1 = cv2.imread('1.jpg')
+    img2 = cv2.imread('images/tag.jpg')
 
-    # 将图片转换为灰度图像
-    grayImg = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    rows, cols, channels = img2.shape
+    roi = img1[0:rows, 0:cols]
 
-    # 应用对比度增强算法，调整对比度值可以控制增强强度
-    contrast = 1.5
-    outputImg1 = cv2.addWeighted(grayImg, contrast, 0, 0, 0)
+    img2gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)      # 将图片灰度化
+    # ret是阈值（175）mask是二值化图像
+    ret, mask = cv2.threshold(img2gray, 175, 255, cv2.THRESH_BINARY)
+    mask_inv = cv2.bitwise_not(mask)
 
-    # 应用直方图均衡化算法
-    outputImg2 = cv2.equalizeHist(outputImg1)
+    # 在img1上面，将logo区域和mask取与使值为0
+    img1_bg = cv2.bitwise_and(roi, roi, mask=mask)
 
-    # 返回处理后的图像
-    return outputImg2
+    # 取 roi 中与 mask_inv 中不为零的值对应的像素的值，其他值为 0 。
+    # 把logo放到图片当中
+    img2_fg = cv2.bitwise_and(img2, img2, mask=mask_inv)  # 获取logo的像素信息
+
+    dst = cv2.add(img1_bg, img2_fg)  # 相加即可
+    img1[0:rows, 0:cols] = dst
+    return img1
 
 
 def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=False, visualize=False, cam=0):
@@ -88,6 +94,7 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
         original_image = img0
         # img0=zengqiangduibi1(img0)
         # img0 = enhance_brightness(original_image)
+        # cv2.line(img0,(311,0),(331,480),(160 ,140, 125),20,8)
         cv2.imshow('web', img0)
         cv2.waitKey(1)
         if not ret_val:
@@ -112,7 +119,8 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                 names = model.names
                 jieguo = ""
                 # Padded resize
-                img = letterbox(img0, img_size, stride=stride, auto=True)[0]
+                img = letterbox(original_image, img_size,
+                                stride=stride, auto=True)[0]
 
                 # Convert
                 img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
@@ -136,7 +144,7 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                         img.shape[2:], det[:, :4], img0.shape).round()
                     for *xyxy, conf, cls in reversed(det):
                         c = int(cls)  # integer class
-                        if cmd == "a" and conf >= 0.81:
+                        if cmd == "a" and conf >= 0.83:
                             print(xyxy)
                             if xyxy[3] < 300:
                                 # 上
@@ -191,9 +199,11 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
 
                 im0 = annotator.result()
             else:
-                bqu = getbqujieguo(original_image)
+                bqu_img = img_mix(img0)
+                bqu = getbqujieguo(bqu_img)
                 jieguo = bqu.get_jieguo()
                 im0 = bqu.get_plot_image()
+                cv2.imshow('webcam:1', bqu.get_det_image())
             cv2.imshow('webcam:0', im0)
             cv2.waitKey(1)
             aqu_pub(jieguo)

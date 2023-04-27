@@ -88,22 +88,23 @@ class getbqujieguo():
         # img0=cv2.imread(file_pathname+filename)
         img0 = images
         # img0=zhengqiang2(img0)
-        img0 = zengqiangduibi1(img0)
+
         # img0=log_transfor(img0,-100)
         time.sleep(0.1)
-        res = model(img0, conf=0.5)  # predict on an image
-        res_plotted = res[0].plot()
+        res = model(img0, conf=0.6)  # predict on an image
+
         res = list(res)[0]  # get result from generator
         up = []
         down = []
         for i in res.boxes.numpy():
             # print(i.xyxy[0].tolist())
-            if i.xyxy[0][1] > 300:
+            if i.xyxy[0][3] > 300:
                 down.append(i.xyxy[0])
             else:
                 up.append(i.xyxy[0])
-
+        res_plotted = res.plot()
         # self.plot_image= res_plotted
+        img0 = zengqiangduibi1(img0)
         upjieguo = []
         simjieguo = []
         self.fabujieguo = ""
@@ -141,10 +142,9 @@ class getbqujieguo():
             print(upjieguo)
             # jieguozong=[]
             # jieguozong.append(simjieguo,upjieguo,[0,2,1])
-            print("SIM jieguo!!!:", max(simjieguo) - min(simjieguo))
-            print("hstack jieguo!!!:", max(upjieguo) - min(upjieguo))
+            print("sim ssssss up:", max(simjieguo) - min(simjieguo))
             zidian = {0: 0, 1: 2, 2: 1}
-            if max(simjieguo) - min(simjieguo) > 600 or max(upjieguo) - min(upjieguo) > 0.06:
+            if max(simjieguo) - min(simjieguo) > 1000 and max(upjieguo) - min(upjieguo) > 0.05:
                 print("666")
                 for i in range(2, -1, -1):
                     tmp0 = img0[int(up[i][1]):int(up[i][3]),
@@ -206,10 +206,9 @@ class getbqujieguo():
             print(upjieguo)
             # jieguozong=[]
             # jieguozong.append(simjieguo,upjieguo,[0,2,1])
-            print("SIM jieguo!!!:", max(simjieguo) - min(simjieguo))
-            print("hstack jieguo!!!:", max(downjieguo) - min(downjieguo))
             zidian = {0: 0, 1: 2, 2: 1}
-            if max(simjieguo) - min(simjieguo) > 600 or max(downjieguo) - min(downjieguo) > 0.06:
+            print("sim ssssss:", max(simjieguo) - min(simjieguo))
+            if max(simjieguo) - min(simjieguo) > 1000 and max(downjieguo) - min(downjieguo) > 0.05:
                 print("666")
                 for i in range(2, -1, -1):
                     tmp0 = img0[int(down[i][1]):int(down[i][3]),
@@ -237,9 +236,13 @@ class getbqujieguo():
                 print("yiyang")
                 # cv2.imwrite("/home/zzb/xiangsi/"+filename[0:len(filename)-4]+str(i)+str(1)+".jpg",img0)
         self.plot_image = img0
+        self.det_image = res_plotted
 
     def get_jieguo(self):
         return self.fabujieguo
 
     def get_plot_image(self):
         return self.plot_image
+
+    def get_det_image(self):
+        return self.det_image
