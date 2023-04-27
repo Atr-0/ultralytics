@@ -91,7 +91,7 @@ class getbqujieguo():
 
         # img0=log_transfor(img0,-100)
         time.sleep(0.1)
-        res = model(img0, conf=0.6)  # predict on an image
+        res = model(img0, conf=0.6, iou=0.45)  # predict on an image
 
         res = list(res)[0]  # get result from generator
         up = []
