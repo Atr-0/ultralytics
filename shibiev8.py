@@ -94,6 +94,8 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
         original_image = img0
         # img0=zengqiangduibi1(img0)
         # img0 = enhance_brightness(original_image)
+        cv2.line(img0, (602, 0), (558, 322), (0, 0, 255), 4, 8)
+        cv2.line(img0, (89, 0), (140, 322), (0, 0, 255), 4, 8)
         cv2.line(img0, (640, 247), (0, 242), (0, 0, 255), 10, 8)
         cv2.imshow('web', img0)
         cv2.waitKey(1)
