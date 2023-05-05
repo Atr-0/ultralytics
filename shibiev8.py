@@ -94,7 +94,7 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
         original_image = img0
         # img0=zengqiangduibi1(img0)
         # img0 = enhance_brightness(original_image)
-        # cv2.line(img0,(311,0),(331,480),(160 ,140, 125),20,8)
+        cv2.line(img0, (640, 247), (0, 242), (0, 0, 255), 10, 8)
         cv2.imshow('web', img0)
         cv2.waitKey(1)
         if not ret_val:
@@ -196,7 +196,6 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                                 label = f'{names[c]} {conf:.2f}'
                                 annotator.box_label(
                                     xyxy, label, color=colors(c, True))
-
                 im0 = annotator.result()
             else:
                 bqu_img = img_mix(img0)
