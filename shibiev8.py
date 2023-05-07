@@ -140,10 +140,10 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                 # plot label
                 det = pred[0]
                 annotator = Annotator(
-                    img0.copy(), line_width=3, example=str(names))
+                    original_image.copy(), line_width=3, example=str(names))
                 if len(det):
                     det[:, :4] = ops.scale_boxes(
-                        img.shape[2:], det[:, :4], img0.shape).round()
+                        img.shape[2:], det[:, :4], original_image.shape).round()
                     for *xyxy, conf, cls in reversed(det):
                         c = int(cls)  # integer class
                         if cmd == "a" and conf >= 0.83:
@@ -185,7 +185,7 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                                 xyxy, label, color=colors(c, True))
                 im0 = annotator.result()
             else:
-                bqu_img = img_mix(img0)
+                bqu_img = img_mix(original_image)
                 bqu = getbqujieguo(bqu_img)
                 jieguo = bqu.get_jieguo()
                 im0 = bqu.get_plot_image()
