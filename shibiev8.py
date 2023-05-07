@@ -170,34 +170,19 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                                 xyxy, label, color=colors(c, True))
                         elif cmd == "d" and conf >= 0.5:
                             print(xyxy)
-                            if c == 3:
-                                if xyxy[3] < 300:
-                                    # 上
-                                    jieguo = str((c + 1) + 10) + \
-                                        ("2" if xyxy[0] < 120 else (
-                                            "0" if xyxy[2] > 480 else "1")) + jieguo
-                                else:
-                                    # 下
-                                    jieguo = jieguo + str((c + 1) + 20) + \
-                                        ("2" if xyxy[0] < 120 else (
-                                            "0" if xyxy[2] > 480 else "1"))
-                                label = f'{names[c]} {conf:.2f}'
-                                annotator.box_label(
-                                    xyxy, label, color=colors(c, True))
-                            elif conf >= 0.7:
-                                if xyxy[3] < 300:
-                                    # 上
-                                    jieguo = str((c + 1) + 10) + \
-                                        ("2" if xyxy[0] < 120 else (
-                                            "0" if xyxy[2] > 480 else "1")) + jieguo
-                                else:
-                                    # 下
-                                    jieguo = jieguo + str((c + 1) + 20) + \
-                                        ("2" if xyxy[0] < 120 else (
-                                            "0" if xyxy[2] > 480 else "1"))
-                                label = f'{names[c]} {conf:.2f}'
-                                annotator.box_label(
-                                    xyxy, label, color=colors(c, True))
+                            if xyxy[3] < 300:
+                                # 上
+                                jieguo = str((c + 1) + 10) + \
+                                    ("2" if xyxy[0] < 200 else (
+                                        "0" if xyxy[2] > 480 else "1")) + jieguo
+                            else:
+                                # 下
+                                jieguo = jieguo + str((c + 1) + 20) + \
+                                    ("2" if xyxy[0] < 200 else (
+                                        "0" if xyxy[2] > 480 else "1"))
+                            label = f'{names[c]} {conf:.2f}'
+                            annotator.box_label(
+                                xyxy, label, color=colors(c, True))
                 im0 = annotator.result()
             else:
                 bqu_img = img_mix(img0)
