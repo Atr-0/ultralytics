@@ -1,8 +1,7 @@
 import rclpy
 from rclpy.node import Node
 import time
-from std_msgs.msg import String, Int32MultiArray
-from geometry_msgs.msg import Point, Vector3
+from std_msgs.msg import String
 from ultralytics import YOLO
 from ultralytics.nn.tasks import attempt_load_weights
 from ultralytics.yolo.data.dataloaders.v5augmentations import letterbox
@@ -45,20 +44,6 @@ def aqu_pub(zhilin):
     msg.data = zhilin
     # print(zhilin)
     Aqu_node_pub.publish(msg)
-    time.sleep(0.03)
-
-
-Dqu_node = Node("dqu_pub")
-Dqu_node_pub = Dqu_node.create_publisher(String, "dqu_detect", 10)
-
-
-def dqu_pub(zhilin):
-    global Dqu_node_pub
-    msg = String()
-    temp = str(zhilin[0]+"/"+zhilin[1])
-    msg.data = temp
-    print(zhilin)
-    Dqu_node_pub.publish(msg)
     time.sleep(0.03)
 
 
@@ -135,11 +120,6 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
 
                 names = model.names
                 jieguo = ""
-                if cmd == "d":
-                    jieguo = []
-                up = ""
-                down = ""
-
                 # Padded resize
                 img = letterbox(original_image, img_size,
                                 stride=stride, auto=True)[0]
@@ -155,7 +135,7 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                 # inference
                 pred = model(img, augment=augment, visualize=visualize)[0]
                 pred = ops.non_max_suppression(
-                    pred, conf_thres=0.25, iou_thres=0.7, max_det=1000)
+                    pred, conf_thres=0.25, iou_thres=0.45, max_det=1000)
 
                 # plot label
                 det = pred[0]
@@ -179,7 +159,7 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                                 xyxy, label, color=colors(c, True))
                         elif cmd == "c" and conf > 0.6:
                             print(xyxy)
-                            if xyxy[3] < 350:
+                            if xyxy[3] < 300:
                                 # 上
                                 jieguo = "0" + jieguo
                             else:
@@ -188,28 +168,18 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                             label = f'{names[c]} {conf:.2f}'
                             annotator.box_label(
                                 xyxy, label, color=colors(c, True))
-                        elif cmd == "d" and conf >= 0.55:
+                        elif cmd == "d" and conf >= 0.5:
                             print(xyxy)
-                            if xyxy[3] < 350:
+                            if xyxy[3] < 300:
                                 # 上
-                                # jieguo = str((c + 1) + 10) + \
-                                #     ("2" if xyxy[0] < 200 else (
-                                #         "0" if xyxy[2] > 480 else "1")) + jieguo
-                                if up != "":
-                                    up = up+"*"
-                                up = up + \
-                                    (str(
-                                        c + 1) + ("2" if xyxy[0] < 200 else ("0" if xyxy[2] > 480 else "1")))
+                                jieguo = str((c + 1) + 10) + \
+                                    ("2" if xyxy[0] < 200 else (
+                                        "0" if xyxy[2] > 480 else "1")) + jieguo
                             else:
                                 # 下
-                                # jieguo = jieguo + str((c + 1) + 20) + \
-                                #     ("2" if xyxy[0] < 200 else (
-                                #         "0" if xyxy[2] > 480 else "1"))
-                                if down != "":
-                                    down = down+"*"
-                                down = down + \
-                                    (str(
-                                        c + 1) + ("2" if xyxy[0] < 200 else ("0" if xyxy[2] > 480 else "1")))
+                                jieguo = jieguo + str((c + 1) + 20) + \
+                                    ("2" if xyxy[0] < 200 else (
+                                        "0" if xyxy[2] > 480 else "1"))
                             label = f'{names[c]} {conf:.2f}'
                             annotator.box_label(
                                 xyxy, label, color=colors(c, True))
@@ -222,21 +192,14 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                 cv2.imshow('webcam:1', bqu.get_det_image())
             cv2.imshow('webcam:0', im0)
             cv2.waitKey(1)
-            if cmd == "d":
-                jieguo = [up, down]
-                dqu_pub(jieguo)
-                dqu_pub(jieguo)
-            else:
-                aqu_pub(jieguo)
-                aqu_pub(jieguo)
+            aqu_pub(jieguo)
             cv2.imwrite("/home/zzb/images/shibie/" + cmd +
                         "qu/" + str(time.time()) + ".jpg", im0)
             cv2.imwrite("/home/zzb/images/" + cmd + "qu/" +
                         str(time.time()) + ".jpg", img0)
             cmd = "n"
         if cmd == "n":
-            pass
-            # aqu_pub(jieguo)
+            aqu_pub(jieguo)
     vid_writer.release()
     cap.release()
 
