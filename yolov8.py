@@ -91,14 +91,14 @@ class getbqujieguo():
         img0 = zengqiangduibi1(img0)
         # img0=log_transfor(img0,-100)
         time.sleep(0.1)
-        res = model(images, conf=0.6, iou=0.7)  # predict on an image
+        res = model(images, conf=0.55, iou=0.75)  # predict on an image
 
         res = list(res)[0]  # get result from generator
         up = []
         down = []
         for i in res.boxes.numpy():
             # print(i.xyxy[0].tolist())
-            if i.xyxy[0][3] > 300:
+            if i.xyxy[0][3] > 350:
                 down.append(i.xyxy[0])
             else:
                 up.append(i.xyxy[0])
@@ -107,7 +107,7 @@ class getbqujieguo():
 
         upjieguo = []
         simjieguo = []
-        self.fabujieguo = ""
+        self.fabujieguo = ''
         up.sort(key=lambda x: x[0])
         if len(up) == 3:
             juhe = []
@@ -144,7 +144,7 @@ class getbqujieguo():
             # jieguozong.append(simjieguo,upjieguo,[0,2,1])
             print("sim ssssss up:", max(simjieguo) - min(simjieguo))
             zidian = {0: 0, 1: 2, 2: 1}
-            if max(simjieguo) - min(simjieguo) > 500 and max(upjieguo) - min(upjieguo) > 0.05:
+            if max(simjieguo) - min(simjieguo) > 650 and max(upjieguo) - min(upjieguo) > 0.05:
                 print("666")
                 for i in range(2, -1, -1):
                     tmp0 = img0[int(up[i][1]):int(up[i][3]),
@@ -161,7 +161,7 @@ class getbqujieguo():
                     if min(simjieguo) == simjieguo[2 - i]:
                         k = zidian[2 - i]
                         print("shangcengcuod shi" + str(k) + "ge")
-                        self.fabujieguo = "3" + str(k) + self.fabujieguo
+                        self.fabujieguo = str(k) + "/"
                         # cv2.rectangle(img0,(500,100),(1000,500),(0,255,0),3)
                         cv2.rectangle(img0, (int(up[k][0]), int(up[k][1])),
                                       (int(up[k][2]), int(up[k][3])), (0, 255, 0), 2)
@@ -208,7 +208,7 @@ class getbqujieguo():
             # jieguozong.append(simjieguo,upjieguo,[0,2,1])
             zidian = {0: 0, 1: 2, 2: 1}
             print("sim ssssss:", max(simjieguo) - min(simjieguo))
-            if max(simjieguo) - min(simjieguo) > 500 and max(downjieguo) - min(downjieguo) > 0.05:
+            if max(simjieguo) - min(simjieguo) > 650 and max(downjieguo) - min(downjieguo) > 0.05:
                 print("666")
                 for i in range(2, -1, -1):
                     tmp0 = img0[int(down[i][1]):int(down[i][3]),
@@ -224,7 +224,9 @@ class getbqujieguo():
                     if min(simjieguo) == simjieguo[2 - i]:
                         k = zidian[2 - i]
                         print("xiacengcuod shi" + str(k) + "ge")
-                        self.fabujieguo = self.fabujieguo + str(k) + "4"
+                        if self.fabujieguo == '':
+                            self.fabujieguo = "/"+self.fabujieguo
+                        self.fabujieguo = self.fabujieguo + str(k)
                         # cv2.rectangle(img0,(500,100),(1000,500),(0,255,0),3)
                         cv2.rectangle(img0, (int(down[k][0]), int(down[k][1])),
                                       (int(down[k][2]), int(down[k][3])), (0, 255, 0), 2)
