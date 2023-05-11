@@ -225,9 +225,11 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
             if cmd == "d":
                 jieguo = [up, down]
                 dqu_pub(jieguo)
+                time.sleep(0.5)
                 dqu_pub(jieguo)
             else:
                 aqu_pub(jieguo)
+                time.sleep(0.5)
                 aqu_pub(jieguo)
             cv2.imwrite("/home/zzb/images/shibie/" + cmd +
                         "qu/" + str(time.time()) + ".jpg", im0)
