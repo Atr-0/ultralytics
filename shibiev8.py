@@ -155,7 +155,7 @@ def run_aqun(save_path, shibie_subscriber, img_size0=640, stride=32, augment=Fal
                 # inference
                 pred = model(img, augment=augment, visualize=visualize)[0]
                 pred = ops.non_max_suppression(
-                    pred, conf_thres=0.5, iou_thres=0.75, max_det=1000)
+                    pred, conf_thres=0.5, iou_thres=0.2, max_det=1000)
 
                 # plot label
                 det = pred[0]
